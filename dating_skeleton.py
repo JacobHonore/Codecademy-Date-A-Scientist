@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
+import math
 
 # Is there a connection between religion and if you smoke?
 # Is there a connection between education level and number of pets?
@@ -44,10 +45,47 @@ class Dating_skeleton():
         plt.tight_layout()
         plt.show()
 
+    def augment_data(self):
+        def map_religion(x):
+            religion_mapping = {
+                "laughing about it": 0,
+                "not too serious about it": 1,
+                "somewhat serious about it": 3,
+                "very serious about it": 4
+            }
+            group = np.nan
+            if (pd.isna(x)):
+                return group
+            for key in religion_mapping:
+                if x and key in x:
+                    group = religion_mapping[key]
+                    break
+                elif x:
+                    group = 2
+            return group
+        body_type_mapping = {
+            "average": 1,
+            "fit": 2,
+            "athletic": 2,
+            "thin": 2,
+            "curvy": 0,
+            "a little extra": 0,
+            "skinny": 1,
+            "full figured": 0,
+            "overweight": 0,
+            "jacked": 2,
+            "used up": 0,
+            "rather not say": np.nan
+        }
+        self.df["body_form"] = self.df.body_type.map(body_type_mapping)
+
+        self.df["religion_seriousness"] = self.df.religion.map(map_religion)
+
 
 def main():
     dataprocessing = Dating_skeleton("profiles.csv")
-    dataprocessing.explore_dataset()
+    #dataprocessing.explore_dataset()
+    dataprocessing.augment_data()
 
 
 if __name__ == '__main__':
