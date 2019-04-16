@@ -128,11 +128,28 @@ class Dating_skeleton():
         print(f"Training set: {len(X_train)} Test set: {len(X_test)}")
         print("Accuracy: ", accuracy_score(y_test, predictions))
 
-    def run_k_neighbors(self, df):
+    def run_k_neighbors(self, df, find_best_k=False):
         print("Starting KNeighborsClassifier")
         df = df.dropna(subset=['body_form', 'religion_seriousness', 'diet'])
-        classifier = KNeighborsClassifier(n_neighbors=5)
         X_train, X_test, y_train, y_test = train_test_split(df[['body_form', 'religion_seriousness']], df['diet'], test_size=0.33, random_state=33)
+        if find_best_k:
+            k_range = range(1, 101)
+            best_k = 1
+            best_accuracy = 0.0
+            accuracies = []
+            for k in k_range:
+                classifier = KNeighborsClassifier(n_neighbors=k)
+                classifier.fit(X_train, y_train)
+                accuracy = classifier.score(X_test, y_test)
+                accuracies.append(accuracy)
+                if (accuracy > best_accuracy):
+                    print("Found new best accuracy {0} with k={1}".format(accuracy, k))
+                    best_accuracy = accuracy
+                    best_k = k
+            self.plot_k_accuracy(k_range, accuracies, "KNeighborsClassifier")
+            classifier = KNeighborsClassifier(n_neighbors=best_k)
+        else:
+            classifier = KNeighborsClassifier(n_neighbors=5)
         t0 = time.time()
         classifier.fit(X_train, y_train)
         t1 = time.time()
@@ -159,11 +176,28 @@ class Dating_skeleton():
         print("Coefs:")
         print(classifier.coef_)
 
-    def run_k_nearest_regression(self, df):
+    def run_k_nearest_regression(self, df, find_best_k=False):
         print("Starting KNeighborsRegressor")
         df = df.dropna(subset=['body_form', 'religion_seriousness', 'diet_code'])
-        classifier = KNeighborsRegressor(n_neighbors=5)
         X_train, X_test, y_train, y_test = train_test_split(df[['body_form', 'religion_seriousness']], df['diet_code'], test_size=0.33, random_state=33)
+        if find_best_k:
+            k_range = range(1, 101)
+            best_k = 1
+            best_accuracy = 0.0
+            accuracies = []
+            for k in k_range:
+                classifier = KNeighborsClassifier(n_neighbors=k)
+                classifier.fit(X_train, y_train)
+                accuracy = classifier.score(X_test, y_test)
+                accuracies.append(accuracy)
+                if (accuracy > best_accuracy):
+                    print("Found new best accuracy {0} with k={1}".format(accuracy, k))
+                    best_accuracy = accuracy
+                    best_k = k
+            self.plot_k_accuracy(k_range, accuracies, "KNeighborsRegressor")
+            classifier = KNeighborsClassifier(n_neighbors=best_k)
+        else:
+            classifier = KNeighborsRegressor(n_neighbors=5)
         t0 = time.time()
         classifier = classifier.fit(X_train, y_train)
         t1 = time.time()
@@ -175,6 +209,12 @@ class Dating_skeleton():
         print("Test score:")
         print(classifier.score(X_test, y_test))
 
+    def plot_k_accuracy(self, k_range, accuracies, title):
+        plt.plot(k_range, accuracies, '.r-')
+        plt.title(title + ' Classifier Accuracy')
+        plt.xlabel('k')
+        plt.ylabel('Validation accuracy')
+        plt.show()
 
 def main():
     dataprocessing = Dating_skeleton("profiles.csv")
@@ -182,9 +222,9 @@ def main():
     dataprocessing.df = dataprocessing.augment_data(dataprocessing.df)
     normalized_data = dataprocessing.normalize_data(dataprocessing.df)
     dataprocessing.run_naive_bayes(dataprocessing.df)
-    dataprocessing.run_k_neighbors(dataprocessing.df)
+    dataprocessing.run_k_neighbors(dataprocessing.df, True)
     dataprocessing.run_linear_regression(dataprocessing.df)
-    dataprocessing.run_k_nearest_regression(dataprocessing.df)
+    dataprocessing.run_k_nearest_regression(dataprocessing.df, True)
 
 
 if __name__ == '__main__':
