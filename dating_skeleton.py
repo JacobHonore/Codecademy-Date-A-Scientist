@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from sklearn import preprocessing, linear_model
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score
 import time
@@ -99,7 +99,7 @@ class Dating_skeleton():
         print("Starting Naive bayes")
         df = df.dropna(subset=['body_form', 'religion_seriousness', 'diet'])
         classifier = MultinomialNB()
-        X_train, X_test, y_train, y_test = train_test_split(df[['body_form', 'religion_seriousness']], df['diet'], test_size=0.33, random_state=949)
+        X_train, X_test, y_train, y_test = train_test_split(df[['body_form', 'religion_seriousness']], df['diet'], test_size=0.33, random_state=33)
         t0 = time.time()
         classifier.fit(X_train, y_train)
         t1 = time.time()
@@ -125,7 +125,7 @@ class Dating_skeleton():
         print("Starting LinearRegression")
         df = df.dropna(subset=['body_form', 'religion_seriousness', 'age'])
         classifier = linear_model.LinearRegression()
-        X_train, X_test, y_train, y_test = train_test_split(df[['body_form', 'religion_seriousness']], df['age'], test_size=0.33, random_state=13)
+        X_train, X_test, y_train, y_test = train_test_split(df[['body_form', 'religion_seriousness']], df['age'], test_size=0.33, random_state=33)
         t0 = time.time()
         classifier = classifier.fit(X_train, y_train)
         t1 = time.time()
@@ -139,6 +139,22 @@ class Dating_skeleton():
         print("Coefs:")
         print(classifier.coef_)
 
+    def run_k_nearest_regression(self, df):
+        print("Starting KNeighborsRegressor")
+        df = df.dropna(subset=['body_form', 'religion_seriousness', 'age'])
+        classifier = KNeighborsRegressor(n_neighbors=5)
+        X_train, X_test, y_train, y_test = train_test_split(df[['body_form', 'religion_seriousness']], df['age'], test_size=0.33, random_state=33)
+        t0 = time.time()
+        classifier = classifier.fit(X_train, y_train)
+        t1 = time.time()
+        predictions = classifier.predict(X_test)
+        print(f"Took {t1-t0}s to KNeighborsRegressor")
+        print(f"Training set: {len(X_train)} Test set: {len(X_test)}")
+        print("Train score:")
+        print(classifier.score(X_train, y_train))
+        print("Test score:")
+        print(classifier.score(X_test, y_test))
+
 
 def main():
     dataprocessing = Dating_skeleton("profiles.csv")
@@ -148,6 +164,7 @@ def main():
     dataprocessing.run_naive_bayes(dataprocessing.df)
     dataprocessing.run_k_neighbors(dataprocessing.df)
     dataprocessing.run_linear_regression(dataprocessing.df)
+    dataprocessing.run_k_nearest_regression(dataprocessing.df)
 
 
 if __name__ == '__main__':
