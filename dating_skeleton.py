@@ -83,8 +83,28 @@ class Dating_skeleton():
             "rather not say": np.nan
         }
         df["body_form"] = df.body_type.map(body_type_mapping)
-
         df["religion_seriousness"] = df.religion.map(map_religion)
+        diet_mapping = {
+            "strictly anything": 0,
+            "mostly anything": 1,
+            "anything": 2,
+            "halal": 3,
+            "other": 4,
+            "kosher": 5,
+            "vegetarian": 6,
+            "vegan": 7,
+            "mostly halal": 8,
+            "mostly other": 9,
+            "mostly kosher": 10,
+            "mostly vegetarian": 11,
+            "mostly vegan": 12,
+            "strictly halal": 13,
+            "strictly kosher": 14,
+            "strictly other": 15,
+            "strictly vegetarian": 16,
+            "strictly vegan": 17,
+        }
+        df["diet_code"] = df.diet.map(diet_mapping)
         return df
 
     def normalize_data(self, df):
@@ -123,9 +143,9 @@ class Dating_skeleton():
 
     def run_linear_regression(self, df):
         print("Starting LinearRegression")
-        df = df.dropna(subset=['body_form', 'religion_seriousness', 'age'])
+        df = df.dropna(subset=['body_form', 'religion_seriousness', 'diet_code'])
         classifier = linear_model.LinearRegression()
-        X_train, X_test, y_train, y_test = train_test_split(df[['body_form', 'religion_seriousness']], df['age'], test_size=0.33, random_state=33)
+        X_train, X_test, y_train, y_test = train_test_split(df[['body_form', 'religion_seriousness']], df['diet_code'], test_size=0.33, random_state=33)
         t0 = time.time()
         classifier = classifier.fit(X_train, y_train)
         t1 = time.time()
@@ -141,9 +161,9 @@ class Dating_skeleton():
 
     def run_k_nearest_regression(self, df):
         print("Starting KNeighborsRegressor")
-        df = df.dropna(subset=['body_form', 'religion_seriousness', 'age'])
+        df = df.dropna(subset=['body_form', 'religion_seriousness', 'diet_code'])
         classifier = KNeighborsRegressor(n_neighbors=5)
-        X_train, X_test, y_train, y_test = train_test_split(df[['body_form', 'religion_seriousness']], df['age'], test_size=0.33, random_state=33)
+        X_train, X_test, y_train, y_test = train_test_split(df[['body_form', 'religion_seriousness']], df['diet_code'], test_size=0.33, random_state=33)
         t0 = time.time()
         classifier = classifier.fit(X_train, y_train)
         t1 = time.time()
