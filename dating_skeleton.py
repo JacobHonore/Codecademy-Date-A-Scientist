@@ -3,6 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from sklearn import preprocessing
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score
 import time
@@ -107,6 +108,19 @@ class Dating_skeleton():
         print(f"Training set: {len(X_train)} Test set: {len(X_test)}")
         print("Accuracy: ", accuracy_score(y_test, predictions))
 
+    def run_k_neighbors(self, df):
+        print("Starting KNeighborsClassifier")
+        df = df.dropna(subset=['body_form', 'religion_seriousness', 'diet'])
+        classifier = KNeighborsClassifier(n_neighbors=5)
+        X_train, X_test, y_train, y_test = train_test_split(df[['body_form', 'religion_seriousness']], df['diet'], test_size=0.33, random_state=33)
+        t0 = time.time()
+        classifier.fit(X_train, y_train)
+        t1 = time.time()
+        predictions = classifier.predict(X_test)
+        print(f"Took {t1-t0}s to KNeighborsClassifier")
+        print(f"Training set: {len(X_train)} Test set: {len(X_test)}")
+        print("Accuracy: ", accuracy_score(y_test, predictions))
+
 
 def main():
     dataprocessing = Dating_skeleton("profiles.csv")
@@ -114,6 +128,7 @@ def main():
     dataprocessing.df = dataprocessing.augment_data(dataprocessing.df)
     normalized_data = dataprocessing.normalize_data(dataprocessing.df)
     dataprocessing.run_naive_bayes(dataprocessing.df)
+    dataprocessing.run_k_neighbors(dataprocessing.df)
 
 
 if __name__ == '__main__':
