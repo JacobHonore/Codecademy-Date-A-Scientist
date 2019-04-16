@@ -1,7 +1,11 @@
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
-import math
+from sklearn import preprocessing
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score
+import time
 
 # Is there a connection between religion and if you smoke?
 # Is there a connection between education level and number of pets?
@@ -13,8 +17,8 @@ class Dating_skeleton():
     def __init__(self, csvfilename):
         self.df = pd.read_csv(csvfilename)
 
-    def explore_dataset(self):
-        mean_incomes = self.df[(self.df.income > 0)]  # Exclude non-answers
+    def explore_dataset(self, df):
+        mean_incomes = df[(df.income > 0)]  # Exclude non-answers
         mean_incomes = mean_incomes[['diet', 'income']].groupby(['diet']).mean().sort_values(['income'])
         print(mean_incomes)
         x = mean_incomes.index
@@ -30,7 +34,7 @@ class Dating_skeleton():
         plt.tight_layout()
         plt.show()
 
-        body_types = self.df['body_type'].replace(np.nan, 'no answer', regex=True).value_counts().sort_values()
+        body_types = df['body_type'].replace(np.nan, 'no answer', regex=True).value_counts().sort_values()
         print(body_types)
         x = body_types.index
         y = body_types
@@ -45,7 +49,7 @@ class Dating_skeleton():
         plt.tight_layout()
         plt.show()
 
-    def augment_data(self):
+    def augment_data(self, df):
         def map_religion(x):
             religion_mapping = {
                 "laughing about it": 0,
@@ -77,15 +81,39 @@ class Dating_skeleton():
             "used up": 0,
             "rather not say": np.nan
         }
-        self.df["body_form"] = self.df.body_type.map(body_type_mapping)
+        df["body_form"] = df.body_type.map(body_type_mapping)
 
-        self.df["religion_seriousness"] = self.df.religion.map(map_religion)
+        df["religion_seriousness"] = df.religion.map(map_religion)
+        return df
+
+    def normalize_data(self, df):
+        feature_data = df[['body_form', 'religion_seriousness']]
+        x = feature_data.values
+        min_max_scaler = preprocessing.MinMaxScaler()
+        x_scaled = min_max_scaler.fit_transform(x)
+        feature_data = pd.DataFrame(x_scaled, columns=feature_data.columns)
+        return feature_data
+
+    def run_naive_bayes(self, df):
+        print("Starting Naive bayes")
+        df = df.dropna(subset=['body_form', 'religion_seriousness', 'diet'])
+        classifier = MultinomialNB()
+        X_train, X_test, y_train, y_test = train_test_split(df[['body_form', 'religion_seriousness']], df['diet'], test_size=0.33, random_state=949)
+        t0 = time.time()
+        classifier.fit(X_train, y_train)
+        t1 = time.time()
+        predictions = classifier.predict(X_test)
+        print(f"Took {t1-t0}s to train Naive bayes")
+        print(f"Training set: {len(X_train)} Test set: {len(X_test)}")
+        print("Accuracy: ", accuracy_score(y_test, predictions))
 
 
 def main():
     dataprocessing = Dating_skeleton("profiles.csv")
-    #dataprocessing.explore_dataset()
-    dataprocessing.augment_data()
+    #dataprocessing.explore_dataset(dataprocessing.df)
+    dataprocessing.df = dataprocessing.augment_data(dataprocessing.df)
+    normalized_data = dataprocessing.normalize_data(dataprocessing.df)
+    dataprocessing.run_naive_bayes(dataprocessing.df)
 
 
 if __name__ == '__main__':
