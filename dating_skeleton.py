@@ -124,7 +124,9 @@ class Dating_skeleton():
         classifier.fit(X_train, y_train)
         t1 = time.time()
         predictions = classifier.predict(X_test)
+        t2 = time.time()
         print(f"Took {t1-t0}s to train Naive bayes")
+        print(f"Took {t2-t1}s to predict on Naive bayes")
         print(f"Training set: {len(X_train)} Test set: {len(X_test)}")
         print("Accuracy: ", accuracy_score(y_test, predictions))
 
@@ -154,7 +156,9 @@ class Dating_skeleton():
         classifier.fit(X_train, y_train)
         t1 = time.time()
         predictions = classifier.predict(X_test)
-        print(f"Took {t1-t0}s to KNeighborsClassifier")
+        t2 = time.time()
+        print(f"Took {t1-t0}s to train KNeighborsClassifier")
+        print(f"Took {t2-t1}s to predict on KNeighborsClassifier")
         print(f"Training set: {len(X_train)} Test set: {len(X_test)}")
         print("Accuracy: ", accuracy_score(y_test, predictions))
 
@@ -167,7 +171,9 @@ class Dating_skeleton():
         classifier = classifier.fit(X_train, y_train)
         t1 = time.time()
         predictions = classifier.predict(X_test)
-        print(f"Took {t1-t0}s to LinearRegression")
+        t2 = time.time()
+        print(f"Took {t1-t0}s to train LinearRegression")
+        print(f"Took {t2-t1}s to predict on LinearRegression")
         print(f"Training set: {len(X_train)} Test set: {len(X_test)}")
         print("Train score:")
         print(classifier.score(X_train, y_train))
@@ -186,7 +192,7 @@ class Dating_skeleton():
             best_accuracy = 0.0
             accuracies = []
             for k in k_range:
-                classifier = KNeighborsClassifier(n_neighbors=k)
+                classifier = KNeighborsRegressor(n_neighbors=k)
                 classifier.fit(X_train, y_train)
                 accuracy = classifier.score(X_test, y_test)
                 accuracies.append(accuracy)
@@ -195,14 +201,16 @@ class Dating_skeleton():
                     best_accuracy = accuracy
                     best_k = k
             self.plot_k_accuracy(k_range, accuracies, "KNeighborsRegressor")
-            classifier = KNeighborsClassifier(n_neighbors=best_k)
+            classifier = KNeighborsRegressor(n_neighbors=best_k)
         else:
             classifier = KNeighborsRegressor(n_neighbors=5)
         t0 = time.time()
         classifier = classifier.fit(X_train, y_train)
         t1 = time.time()
         predictions = classifier.predict(X_test)
-        print(f"Took {t1-t0}s to KNeighborsRegressor")
+        t2 = time.time()
+        print(f"Took {t1-t0}s to train KNeighborsRegressor")
+        print(f"Took {t2-t1}s to predict on KNeighborsRegressor")
         print(f"Training set: {len(X_train)} Test set: {len(X_test)}")
         print("Train score:")
         print(classifier.score(X_train, y_train))
